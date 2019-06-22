@@ -1,0 +1,9 @@
+* Stack/heap split
+* Streams
+  32 -> 16,7,5 split
+  from scratch?
+* GC/linear interaction
+* Session types channels
+* borrow mutable?
+* elgot recursion
+* c ffi
