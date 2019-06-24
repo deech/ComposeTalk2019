@@ -598,7 +598,7 @@ prfun split
   sif i > 0 then 
     let 
       prval (pfx,pfxs) = uncons(pfarr)
-      prval (pfleft,pfright) = split{l+sizeof(a)}{n-1,i-1}(pfxs)
+      prval (pfleft,pfright) = split{..}{n.-1,i-1}(pfxs)
     in
       (arr_cons (pfx, pfleft), pfright)
     end
@@ -608,6 +608,24 @@ prfun split
     in
      (arr_nil{a}{l}(), pfarr)
     end
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+prfun split
+  ...
+  sif i > 0 then 
+    let 
+      prval (pfx,pfxs) = uncons(pfarr)
+                             
+                
+                   
+                                  
+                                         
+ 
+                                       
+       
+
+       
 #+END_SRC
 * ATS
 #+BEGIN_SRC
