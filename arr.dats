@@ -66,7 +66,7 @@ prfn arr_split
   {a:vtflt}
   {l:addr}
   {n:int}{i:nat | i <= n}
-  (pfarr: arr(a,l,n)): @(arr(a,l,i), arr(a,l+i*sizeof(a),n-i)) =
+  (pfarr: arr(a,l,n), i:size(n)): @(arr(a,l,i), arr(a,l+i*sizeof(a),n-i)) =
   split (pfarr) where {
     prfun split
       {l:addr} 
@@ -102,19 +102,13 @@ impltmp{a}arr_free
   | ~arr_cons(x,xs) => (arr_free$inner(x); arr_free(xs))
 
 implement main0(argc,argv) =
-  let 
+  let
     val a = arr_cons(string0_copy_vt("a"),
              arr_cons(string0_copy_vt("b"),
                arr_cons(string0_copy_vt("c"),
-                 arr_nil())))
-    prval (a1,a2) = arr_split{..}{..}{..}{1}(a)
-   
-  in (
-    arr_free<string_vt>(a1) where {
-      impltmp arr_free$inner<string_vt>(s) = free s
-    };
-    arr_free<string_vt>(a2) where {
-      impltmp arr_free$inner<string_vt>(s) = free s
-    };
-  )
+                 arr_cons(string0_copy_vt("d"),
+                   arr_nil()))))
+    prval (a1,a2) = arr_split(a)
+    val () = $showtype a2
+  in 
   end

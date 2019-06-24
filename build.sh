@@ -41,7 +41,7 @@ fi
 
 if [ ! -f "$TEMPTORY/bin/tempacc" ]; then
   (cd "$DIRECTORY" &&
-    git clone git@github.com:githwxi/ATS-Temptory
+    # git clone git@github.com:githwxi/ATS-Temptory
     (cd "$TEMPTORY" &&
       (cd srcgen && make -f Makefile) &&
       (cp -f srcgen/BUILD/tempopt bin/tempopt) &&

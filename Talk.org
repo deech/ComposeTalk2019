@@ -14,18 +14,39 @@
 - And type safe.
 * ATS
 - Compiles to /predictable/ C
-  - Recursion is well supported
-- Compiles to /predictable/ C
   - Allows C idioms
   - malloc/free, pointers, stack control
 - No compiler optimizations except TCO
+  - Recursion is well supported
   - Almost no ...
+* ATS
 - Linear/refinement types, proof level language
+- Not just for memory!
+- File handles, network handles
+- Any resource!
 * ATS
 - Extremely difficult
   - Syntax
   - Errors
+  - Not mature!
+- Mine it for the ideas!
+  - Language designers, steal!
+  - Users, demand!
+* ATS
+- Previously spoke about ATS at a high level
 - But I want to get into the more interesting features
+- Not going to hold back!
+  - Wall of code
+  - Explain what it's doing 
+  - But not every bit of syntax
+* ATS
+- What are linear types?
+- Use once! 
+- Pass it to a function, consumed.
+* ATS
+- Reading from a file
+- Linear types to track file descriptors
+- C FFI
 * ATS
 #+BEGIN_SRC
 implement main0(argc,argv) =
@@ -45,6 +66,67 @@ implement main0(argc,argv) =
 implement main0(argc,argv) =
   let
     val a = fopen("test.txt","r")
+
+
+  in (
+
+
+
+  )
+  end
+#+END_SRC
+* ATS
+- Tracked by the linear type system
+#+BEGIN_SRC
+datavtype FileHandle = FileHandle of ()
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+implement main0(argc,argv) =
+  let
+    val a = fopen("test.txt","r")
+    val b = fopen("test.txt","r")
+    var f = lam@(s:string):void => println! s
+  in (
+    fwithline(a,f);
+    fclose(a);
+    fclose(b)
+  )
+  end
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+implement main0(argc,argv) =
+  let
+    val a = fopen("test.txt","r")
+
+
+  in (
+
+    fclose(a);
+
+  )
+  end
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+implement main0(argc,argv) =
+  let
+
+    val b = fopen("test.txt","r")
+
+  in (
+
+
+    fclose(b)
+  )
+  end
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+implement main0(argc,argv) =
+  let
+    val a = fopen("test.txt","r")
                                   
                                              
   in (
@@ -53,10 +135,6 @@ implement main0(argc,argv) =
              
   )
   end
-#+END_SRC
-* ATS
-#+BEGIN_SRC
-datavtype FileHandle = FileHandle of ()
 #+END_SRC
 * ATS
 #+BEGIN_SRC
@@ -350,6 +428,15 @@ fun fwithline(
 fun fclose(f: FileHandle):void = 
 #+END_SRC
 * ATS
+- Not just for memory (any resource can be linearly tracked!)
+- C FFI is _very_ easy & encouraged
+- Strong roots in C
+* ATS
+- Building an linearly tracked array from scratch
+- Datatypes + linear views
+- Proofs!
+  - Interleaved with term level code
+* ATS
   #+BEGIN_SRC
 datavtype arr(a:vtflt,addr,int) = 
  | {l:addr}
@@ -416,18 +503,199 @@ datavtype arr(a:vtflt,addr,int) =
   #+END_SRC
 * ATS
 #+BEGIN_SRC
-fun {a:tflt} arr_init
-  {n:nat}(n:size(n), init:a): [a:vtflt][l:addr] arr(a,l,n) =
-  let 
-    val p0 = $extfcall(cptr(a),"calloc",n*sizeof<a>,sizeof<a>)
-    fun loop(p0:cptr(a),p_end:cptr(a),init:a):void = 
-      if (p0 < p_end) then ( 
-        $UN.cptr0_set<a>(p0,init); 
-        loop(succ(p0), p_end, init) 
-      ) 
-      else ()
-    val () = loop(p0,p0+n*sizeof<a>,init)
-  in 
-    $UN.castvwtp0(p0)
-  end
+val a = arr_cons(string0_copy_vt("a"),
+         arr_cons(string0_copy_vt("b"),
+           arr_cons(string0_copy_vt("c"),
+             arr_cons(string0_copy_vt("d"),
+               arr_nil()))))
+
+["a","b","c","d"]
+#+END_SRC
+* ATS
+- Split the array!
+- *Prove* it!
+- Statically split the array
+#+BEGIN_SRC
+val a = arr_cons(string0_copy_vt("a"),
+         arr_cons(string0_copy_vt("b"),
+            ...
+prval (a1,a2) = array_split(a,1)
+ |                  |_______ type level proof!
+ |____________ proof value
+
+["a"], ["b","c","d"]
+#+END_SRC
+- Proofs erased at runtime, zero cost!
+* ATS 
+#+BEGIN_SRC
+prfn arr_split
+  {a:vtflt}
+  {l:addr}
+  {n:int}{i:nat | i <= n}
+  (pfarr: arr(a,l,n), i:size(n)): 
+    @(arr(a,l,i), arr(a,l+i*sizeof(a),n-i)) =
+  split (pfarr) where {
+    prfun split
+       ...
+  }
+#+END_SRC
+* ATS 
+#+BEGIN_SRC
+prfn arr_split
+
+
+
+  (pfarr: arr(a,l,n), i:size(n)): 
+    @(arr(a,l,i), arr(a,l+i*sizeof(a),n-i)) =
+
+
+
+  }
+#+END_SRC
+* ATS 
+#+BEGIN_SRC
+prfn arr_split
+
+
+  {n:int}{i:nat | i <= n}
+  (pfarr: arr(a,l,n), i:size(n)): 
+    @(arr(a,l,i), arr(a,l+i*sizeof(a),n-i)) =
+
+
+
+  }
+#+END_SRC
+* ATS 
+#+BEGIN_SRC
+prfn arr_split
+  {a:vtflt}
+  {l:addr}
+  {n:int}{i:nat | i <= n}
+  (pfarr: arr(a,l,n), i:size(n)): 
+    @(arr(a,l,i), arr(a,l+i*sizeof(a),n-i)) =
+
+
+
+  }
+#+END_SRC
+* ATS 
+#+BEGIN_SRC
+prfn arr_split
+  {a:vtflt}
+  {l:addr}
+  {n:int}{i:nat | i <= n}
+  (pfarr: arr(a,l,n), i:size(n)): 
+    @(arr(a,l,i), arr(a,l+i*sizeof(a),n-i)) =
+  split (pfarr) where {
+    prfun split
+       ...
+  }
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+prfun split
+  ...
+  sif i > 0 then 
+    let 
+      prval (pfx,pfxs) = uncons(pfarr)
+      prval (pfleft,pfright) = split{l+sizeof(a)}{n-1,i-1}(pfxs)
+    in
+      (arr_cons (pfx, pfleft), pfright)
+    end
+  else 
+    let
+      prval EQINT () = eqint_make{i,0}()
+    in
+     (arr_nil{a}{l}(), pfarr)
+    end
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+prfun split
+  ...
+  sif i > 0 then 
+    let 
+      prval (pfx,pfxs) = uncons(pfarr)
+               ____________| 
+               |
+extern praxi uncons
+  {a:vtflt}{l:addr}{n:nat | n > 0}
+  (arr(a,l,n)):(a,arr(a,l+sizeof(a),n-1))
+ 
+                                       
+       
+
+       
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+prfun split
+  ...
+  sif i > 0 then 
+    let 
+      prval (pfx,pfxs) = uncons(pfarr)
+               ____________| 
+               |
+extern praxi uncons
+
+  (arr(a,l,n)):(a,arr(a,l+sizeof(a),n-1))
+ 
+                                       
+       
+
+       
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+prfun split
+  ...
+  sif i > 0 then 
+    let 
+      prval (pfx,pfxs) = uncons(pfarr)
+      prval (pfleft,pfright) = split{..}{n-1,i-1}(pfxs)
+    in                                |_____
+      (arr_cons (pfx, pfleft), pfright)     |
+    end                                     |
+  else          l+sizeof(a)_________________|
+
+
+
+
+    end
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+prfun split
+  ...
+  sif i > 0 then 
+        
+                                      
+                                                                
+      
+                                       
+       
+  else 
+    let
+      prval EQINT () = eqint_make{i,0}()
+    in
+     (arr_nil{a}{l}(), pfarr)
+    end
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+prfun split
+  ...
+  sif i > 0 then 
+        
+              ___________________________________                        
+              |                                  |                
+  dataprop EQINT(int,int) = {x:int} EQINT(x,x)   |
+  extern prfun eqint_make{x,y:int | x == y}(): EQINT(x, y)
+                   |_______ 
+  else                     |
+    let                    |
+      prval EQINT () = eqint_make{i,0}()
+    in
+     (arr_nil{a}{l}(), pfarr)
+    end
 #+END_SRC
