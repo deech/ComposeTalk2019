@@ -12,30 +12,19 @@ datavtype arr(a:vtflt,addr,int) =
    arr_cons(a,l,n+1) of (a,arr(a,l+sizeof(a),n)) 
 
 fun {a:tflt} arr_init
-  {n:nat}(n:size(n), init: a): [a:vtflt][l:addr] arr(a,l,n) =
+  {n:nat}(n:size(n), init:a): [a:vtflt][l:addr] arr(a,l,n) =
   let 
     val p0 = $extfcall(cptr(a),"calloc",n*sizeof<a>,sizeof<a>)
-    fun loop(p0:cptr(a),p_end:cptr(a)):void = 
+    fun loop(p0:cptr(a),p_end:cptr(a),init:a):void = 
       if (p0 < p_end) then ( 
         $UN.cptr0_set<a>(p0,init); 
-        loop(succ(p0), p_end) 
+        loop(succ(p0), p_end, init) 
       ) 
       else ()
-    val () = loop(p0,p0+n*sizeof<a>)
+    val () = loop(p0,p0+n*sizeof<a>,init)
   in 
     $UN.castvwtp0(p0)
   end
-
-extern fun {a:vtflt} arr_free$inner(x:a):void
-
-fun {a:vtflt} arr_free
-  {l:addr}{n:nat}
-  (a:arr(a,l,n)):void = loop(a) where {
-    fun loop{l:addr}{n:nat}(a:arr(a,l,n)) = 
-      case+ a of 
-      | ~arr_cons(x,xs) => ($UN.cast2void(x); loop(xs))
-      | ~arr_nil() => ()
-  }
 
 dataprop EQINT(int,int) = {x:int} EQINT(x,x)
 extern prfun eqint_make{x,y:int | x == y}(): EQINT(x, y)
@@ -103,4 +92,29 @@ fun {a:vtflt} arr_zero
   {n:nat}
   (s:size(n)):[l:addr] arr(a,l,n) = $UN.castvwtp0($extfcall(ptr, "malloc", s*sizeof<a>))
 
-implement main0(argc,argv) = println! "hello world"
+extern fun {a:vtflt} arr_free$inner(a:a): void
+extern fun {a:vtflt} arr_free{l:addr}{n:nat}(arr(a,l,n)):void
+
+impltmp{a}arr_free
+  (arr):void =
+  case+ arr of 
+  | ~arr_nil() => ()
+  | ~arr_cons(x,xs) => (arr_free$inner(x); arr_free(xs))
+
+implement main0(argc,argv) =
+  let 
+    val a = arr_cons(string0_copy_vt("a"),
+             arr_cons(string0_copy_vt("b"),
+               arr_cons(string0_copy_vt("c"),
+                 arr_nil())))
+    prval (a1,a2) = arr_split{..}{..}{..}{1}(a)
+   
+  in (
+    arr_free<string_vt>(a1) where {
+      impltmp arr_free$inner<string_vt>(s) = free s
+    };
+    arr_free<string_vt>(a2) where {
+      impltmp arr_free$inner<string_vt>(s) = free s
+    };
+  )
+  end
