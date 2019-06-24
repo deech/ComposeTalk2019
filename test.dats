@@ -1,6 +1,9 @@
+%{
+  #include <string.h>
+%}
+
 #include "share/HATS/temptory_staload_bucs320.hats"
 #staload UN = "libats/SATS/unsafe.sats"
-
 fun{a:vtflt} ptr_set
   {l:addr}
   (pf: !a? @ l >> a @ l | p: ptr l, x: a): void =
@@ -12,14 +15,36 @@ datavtype arr(a:vtflt,addr,int) =
  | {l:addr}{n:nat}
    arr_cons(a,l,n+1) of (a,arr(a,l+sizeof(a),n)) 
 
+fun {a:tflt} arr_init
+  {n:nat}(n:size(n), init: a): [a:vtflt][l:addr] arr(a,l,n) =
+  let 
+    val p0 = $extfcall(cptr(a),"calloc",n*sizeof<a>,sizeof<a>)
+    fun loop(p0:cptr(a),p_end:cptr(a)):void = 
+      if (p0 < p_end) then ( 
+        $UN.cptr0_set<a>(p0,init); 
+        loop(succ(p0), p_end) 
+      ) 
+      else ()
+    val () = loop(p0,p0+n*sizeof<a>)
+  in 
+    $UN.castvwtp0(p0)
+  end
+
+extern fun {a:vtflt} arr_free$inner(x:a):void
+
+fun {a:vtflt} arr_free
+  {l:addr}{n:nat}
+  (a:arr(a,l,n)):void = loop(a) where {
+    fun loop{l:addr}{n:nat}(a:arr(a,l,n)) = 
+      case+ a of 
+      | ~arr_cons(x,xs) => ($UN.cast2void(x); loop(xs))
+      | ~arr_nil() => ()
+  }
+
 dataprop EQINT(int,int) = {x:int} EQINT(x,x)
 extern prfun eqint_make{x,y:int | x == y}(): EQINT(x, y)
-extern praxi uncons:
-  {a:vtflt}{l:addr}{n:nat | n > 0}
-  arr(a,l,n) -<prf> (a,arr(a,l+sizeof(a),n-1))
-extern praxi unnil:
-  {a:vtflt}{l:addr} 
-  arr(a,l,0) -<prf> void
+extern praxi uncons{a:vtflt}{l:addr}{n:nat | n > 0}(arr(a,l,n)):(a,arr(a,l+sizeof(a),n-1))
+extern praxi unnil{a:vtflt}{l:addr}(arr(a,l,0)):void
 
 prfn arr_unsplit
   {a:vtflt}
@@ -30,7 +55,6 @@ prfn arr_unsplit
     pfarr2:arr(a,l+sizeof(a)*n1,n2)
   ): arr(a,l,n1+n2) =
   unsplit(pfarr1,pfarr2) where {
-
     prfun unsplit
       {l:addr}{n1,n2:nat}
       .<n1>.
@@ -42,10 +66,13 @@ prfn arr_unsplit
         in 
           arr_cons(pfx,pfres)
         end
-      else 
-        let prval EQINT () = eqint_make{n1,0}() 
-            prval () = unnil(pf1)
-        in 
+      else
+        let
+          prval EQINT () = eqint_make{n1,0}()
+          prval () = consume(pf1) where {
+            extern praxi consume(arr(a,l,0)):void
+          }
+        in
           pf2 
         end
   }
@@ -54,7 +81,7 @@ prfn arr_split
   {a:vtflt}
   {l:addr}
   {n:int}{i:nat | i <= n}
-  (pfarr: arr(a,l,n)):<prf> @(arr(a,l,i), arr(a,l+i*sizeof(a),n-i)) =
+  (pfarr: arr(a,l,n)): @(arr(a,l,i), arr(a,l+i*sizeof(a),n-i)) =
   split (pfarr) where {
     prfun split
       {l:addr} 
@@ -69,16 +96,49 @@ prfn arr_split
           (arr_cons (pfx, pfleft), pfright)
         end
       else 
-        let prval EQINT () = eqint_make{i,0}() in (arr_nil{a}{l}(), pfarr) end
+        let
+          prval EQINT () = eqint_make{i,0}()
+        in
+         (arr_nil{a}{l}(), pfarr)
+        end
   }
 
 fun {a:vtflt} arr_zero
   {n:nat}
   (s:size(n)):[l:addr] arr(a,l,n) = $UN.castvwtp0($extfcall(ptr, "malloc", s*sizeof<a>))
 
-implement main0(argc,argv) = 
+datavtype FileHandle = FileHandle of ()
+    
+fun fopen(path:strcst,mode:strcst): FileHandle =
   let
-  in
-    println! "hello world"
+    extern castfn toFileHandle(p:ptr0):<> FileHandle
+  in toFileHandle($extfcall(ptr0,"fopen",path,mode)) end
+
+extern castfn fromFH{l:addr}(f:FileHandle):<> ptr0
+
+fun fclose{l:addr}(f:FileHandle):void =
+  $extfcall(void,"fclose", fromFH(f))
+
+fun fwithline{l:addr}(fh: !FileHandle, f: &(string) -<clo1> void):void =
+  let
+    var len = i2sz(0)
+    var buffer = the_null_ptr
+    extern castfn toPtr{l:addr}(f: !FileHandle):<> ptr0
+    val _ = $extfcall(int,"getline",addr@buffer,addr@len,toPtr(fh))
+  in (
+    println! len;
+    f ($UN.castvwtp0{string}(buffer))
+  )
   end
-  
+
+implement main0(argc,argv) =
+  let
+    val a = fopen("test.txt","r")
+    val b = fopen("test.txt","rw")
+    var f = lam@(s:string):void => println! s
+  in (
+    fwithline(a,f);
+    fclose(a);
+    fclose(b)
+  )
+  end
