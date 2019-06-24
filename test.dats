@@ -109,32 +109,39 @@ fun {a:vtflt} arr_zero
 
 datavtype FileHandle = FileHandle of ()
     
-fun fopen(path:strcst,mode:strcst): FileHandle =
+fun fopen(path:string,mode:string): FileHandle =
   let
     extern castfn toFileHandle(p:ptr0):<> FileHandle
-  in toFileHandle($extfcall(ptr0,"fopen",path,mode)) end
+  in
+    toFileHandle($extfcall(ptr0,"fopen",path,mode))
+  end
 
-extern castfn fromFH{l:addr}(f:FileHandle):<> ptr0
+fun fclose(f:FileHandle):void =
+  let 
+    extern castfn fromFH(f:FileHandle):<> ptr0
+  in
+    $extfcall(void,"fclose", fromFH(f))
+  end
 
-fun fclose{l:addr}(f:FileHandle):void =
-  $extfcall(void,"fclose", fromFH(f))
-
-fun fwithline{l:addr}(fh: !FileHandle, f: &(string) -<clo1> void):void =
+fun fwithline(
+    fh: !FileHandle,
+    f: &(string) -<clo1> void
+    ):void =
   let
     var len = i2sz(0)
+    val lenP = addr@len
     var buffer = the_null_ptr
+    val bufferP = addr@buffer
     extern castfn toPtr{l:addr}(f: !FileHandle):<> ptr0
-    val _ = $extfcall(int,"getline",addr@buffer,addr@len,toPtr(fh))
-  in (
-    println! len;
+    val _ = $extfcall(int,"getline",bufferP,lenP,toPtr(fh))
+  in
     f ($UN.castvwtp0{string}(buffer))
-  )
   end
 
 implement main0(argc,argv) =
   let
     val a = fopen("test.txt","r")
-    val b = fopen("test.txt","rw")
+    val b = fopen("test.txt","r")
     var f = lam@(s:string):void => println! s
   in (
     fwithline(a,f);

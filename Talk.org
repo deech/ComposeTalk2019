@@ -5,39 +5,350 @@
 #+LATEX_CLASS: beamer
 #+LATEX_listingsCLASS_OPTIONS: [presentation]
 #+BEAMER_THEME: Madrid
-#+EPRESENT_FRAME_LEVEL: 1
 
 * ATS
-- An ML with ADTs and pattern matching
+- An ML with ADTs, pattern matching, tail calls
+- Can be exactly as good the C equivalent
+  - Control over memory
+  - Performance
+- And type safe.
+* ATS
+- Compiles to /predictable/ C
   - Recursion is well supported
 - Compiles to /predictable/ C
+  - Allows C idioms
   - malloc/free, pointers, stack control
 - No compiler optimizations except TCO
   - Almost no ...
-  - C perf. because C idioms
 - Linear/refinement types, proof level language
+* 
 * ATS
-- Hello world 
-#+BEGIN_SRC ats
-    #include "share/HATS/temptory_staload_bucs320.hats"
-    fun mytest():stream_vt(int) =
-      (* *)
-
-    implement main0(argc,argv) = 
-      let
-        val n = mytest()
-        val x = stream_vt_listize n
-        val () = print x
-      in
-        free x
-      end
+- Extremely difficult
+  - Syntax
+  - Errors
+- But I want to get into the more interesting features
+* 
+#+BEGIN_SRC
+implement main0(argc,argv) =
+  let
+    val a = fopen("test.txt","r")
+    val b = fopen("test.txt","r")
+    var f = lam@(s:string):void => println! s
+  in (
+    fwithline(a,f);
+    fclose(a);
+    fclose(b)
+  )
+  end
 #+END_SRC
-* Notes
-- tuple allocation
-- array appending
-- array appending with overflowcheck
-- array filtering
-- array filtering in place
-- streams from scratch (lazy/ldelay)
-- stream processing (templates/lexical scope)
-- interaction between GC'ed and non-gc'ed components
+ 
+* 
+#+BEGIN_SRC
+implement main0(argc,argv) =
+  let
+    val a = fopen("test.txt","r")
+                                  
+                                             
+  in (
+                   
+              
+             
+  )
+  end
+#+END_SRC
+
+* 
+#+BEGIN_SRC
+datavtype FileHandle = FileHandle of ()
+#+END_SRC
+* 
+#+BEGIN_SRC
+fun fopen(path:string,mode:string): FileHandle =
+  let
+    extern castfn toFileHandle(p:ptr0):<> FileHandle
+  in
+    toFileHandle($extfcall(ptr0,"fopen",path,mode))
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+fun fopen(path:string,mode:string): FileHandle =
+  let
+                                                    
+  in
+                ($extfcall(ptr0,"fopen",path,mode))
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+fun fopen(path:string,mode:string): FileHandle =
+  let
+                  toFileHandle(p:ptr0):<> FileHandle
+  in
+    toFileHandle($extfcall(ptr0,"fopen",path,mode))
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+fun fopen(path:string,mode:string): FileHandle =
+  let
+    extern castfn toFileHandle(p:ptr0):<> FileHandle
+  in
+    toFileHandle($extfcall(ptr0,"fopen",path,mode))
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+implement main0(argc,argv) =
+  let
+    val a = fopen("test.txt","r")
+                                  
+                                             
+  in (
+                   
+              
+             
+  )
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+implement main0(argc,argv) =
+  let
+    val a = fopen("test.txt","r")
+    val b = fopen("test.txt","r")
+
+  in (
+
+
+
+  )
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+implement main0(argc,argv) =
+  let
+    val a = fopen("test.txt","r")
+    val b = fopen("test.txt","r")
+    var f = lam@(s:string):void => println! s
+  in (        |
+              +-------- stack allocated closure!
+
+
+  )
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+implement main0(argc,argv) =
+  let
+    val a = fopen("test.txt","r")
+    val b = fopen("test.txt","r")
+    var f = lam@(s:string):void => println! s
+  in (
+    fwithline(a,f);
+
+
+  )
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+fun fwithline(
+    fh: !FileHandle,
+    f: &(string) -<clo1> void
+    ):void =
+  let
+                     
+                       
+                             
+                             
+                                                       
+                                                           
+  in
+
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+fun fwithline(
+    fh: !FileHandle,
+    f: &(string) -<clo1> void
+    ):void =
+  let
+                     
+                       
+                             
+                             
+                                                       
+    val _ = $extfcall(int,"getline",       ,    ,         )
+  in
+
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+fun fwithline(
+    fh: !FileHandle,
+    f: &(string) -<clo1> void
+    ):void =
+  let
+    var len = i2sz(0)
+    val lenP = addr@len
+                             
+                             
+                                                       
+    val _ = $extfcall(int,"getline",       ,lenP,         )
+  in
+
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+fun fwithline(
+    fh: !FileHandle,
+    f: &(string) -<clo1> void
+    ):void =
+  let
+    var len = i2sz(0)
+    val lenP = addr@len
+    var buffer = the_null_ptr
+    val bufferP = addr@buffer
+
+    val _ = $extfcall(int,"getline",bufferP,lenP,         )
+  in
+
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+fun fwithline(
+    fh: !FileHandle,
+    f: &(string) -<clo1> void
+    ):void =
+  let
+    var len = i2sz(0)
+    val lenP = addr@len
+    var buffer = the_null_ptr
+    val bufferP = addr@buffer
+                  toPtr{l:addr}(f: !FileHandle):<> ptr0
+    val _ = $extfcall(int,"getline",bufferP,lenP,toPtr(fh))
+  in
+
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+fun fwithline(
+    fh: !FileHandle,
+    f: &(string) -<clo1> void
+    ):void =
+  let
+    var len = i2sz(0)
+    val lenP = addr@len
+    var buffer = the_null_ptr
+    val bufferP = addr@buffer
+    extern castfn toPtr{l:addr}(f: !FileHandle):<> ptr0
+    val _ = $extfcall(int,"getline",bufferP,lenP,toPtr(fh))
+  in
+
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+fun fwithline(
+    fh: !FileHandle,
+    f: &(string) -<clo1> void
+    ):void =
+  let
+                     
+                       
+    var buffer = the_null_ptr
+                             
+                                                       
+
+  in
+    f (                     (buffer))
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+fun fwithline(
+    fh: !FileHandle,
+    f: &(string) -<clo1> void
+    ):void =
+  let
+                     
+                       
+    var buffer = the_null_ptr
+                             
+                                                       
+
+  in
+    f ($UN.castvwtp0{string}(buffer))
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+implement main0(argc,argv) =
+  let
+    val a = fopen("test.txt","r")
+    val b = fopen("test.txt","r")
+    var f = lam@(s:string):void => println! s
+  in (
+    fwithline(a,f);
+              
+             
+  )
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+implement main0(argc,argv) =
+  let
+    val a = fopen("test.txt","r")
+    val b = fopen("test.txt","r")
+    var f = lam@(s:string):void => println! s
+  in (
+    fwithline(a,f);
+    fclose(a);
+
+  )
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+fun fclose(f:FileHandle):void =
+  let 
+    extern castfn fromFH(f:FileHandle):<> ptr0
+  in
+    $extfcall(void,"fclose",fromFH(f))
+  end
+#+END_SRC
+* 
+#+BEGIN_SRC
+implement main0(argc,argv) =
+  let
+    val a = fopen("test.txt","r")
+    val b = fopen("test.txt","r")
+    var f = lam@(s:string):void => println! s
+  in (
+    fwithline(a,f);
+    fclose(a);
+    fclose(b)
+  )
+  end
+#+END_SRC
+* 
+
+#+BEGIN_SRC
+fun fwithline(       
+    fh: !FileHandle, 
+                      
+    ):void =         
+#+END_SRC
+
+#+BEGIN_SRC
+fun fclose(f: FileHandle):void = 
+#+END_SRC
