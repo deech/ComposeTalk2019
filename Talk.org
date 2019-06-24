@@ -21,13 +21,12 @@
 - No compiler optimizations except TCO
   - Almost no ...
 - Linear/refinement types, proof level language
-* 
 * ATS
 - Extremely difficult
   - Syntax
   - Errors
 - But I want to get into the more interesting features
-* 
+* ATS 
 #+BEGIN_SRC
 implement main0(argc,argv) =
   let
@@ -41,8 +40,7 @@ implement main0(argc,argv) =
   )
   end
 #+END_SRC
- 
-* 
+* ATS
 #+BEGIN_SRC
 implement main0(argc,argv) =
   let
@@ -56,12 +54,11 @@ implement main0(argc,argv) =
   )
   end
 #+END_SRC
-
-* 
+* ATS
 #+BEGIN_SRC
 datavtype FileHandle = FileHandle of ()
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 fun fopen(path:string,mode:string): FileHandle =
   let
@@ -70,7 +67,7 @@ fun fopen(path:string,mode:string): FileHandle =
     toFileHandle($extfcall(ptr0,"fopen",path,mode))
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 fun fopen(path:string,mode:string): FileHandle =
   let
@@ -79,7 +76,7 @@ fun fopen(path:string,mode:string): FileHandle =
                 ($extfcall(ptr0,"fopen",path,mode))
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 fun fopen(path:string,mode:string): FileHandle =
   let
@@ -88,7 +85,7 @@ fun fopen(path:string,mode:string): FileHandle =
     toFileHandle($extfcall(ptr0,"fopen",path,mode))
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 fun fopen(path:string,mode:string): FileHandle =
   let
@@ -97,7 +94,7 @@ fun fopen(path:string,mode:string): FileHandle =
     toFileHandle($extfcall(ptr0,"fopen",path,mode))
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 implement main0(argc,argv) =
   let
@@ -111,7 +108,7 @@ implement main0(argc,argv) =
   )
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 implement main0(argc,argv) =
   let
@@ -125,7 +122,7 @@ implement main0(argc,argv) =
   )
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 implement main0(argc,argv) =
   let
@@ -139,7 +136,7 @@ implement main0(argc,argv) =
   )
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 implement main0(argc,argv) =
   let
@@ -153,7 +150,7 @@ implement main0(argc,argv) =
   )
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 fun fwithline(
     fh: !FileHandle,
@@ -170,7 +167,7 @@ fun fwithline(
 
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 fun fwithline(
     fh: !FileHandle,
@@ -187,7 +184,7 @@ fun fwithline(
 
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 fun fwithline(
     fh: !FileHandle,
@@ -204,7 +201,7 @@ fun fwithline(
 
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 fun fwithline(
     fh: !FileHandle,
@@ -221,7 +218,7 @@ fun fwithline(
 
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 fun fwithline(
     fh: !FileHandle,
@@ -238,7 +235,7 @@ fun fwithline(
 
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 fun fwithline(
     fh: !FileHandle,
@@ -255,7 +252,7 @@ fun fwithline(
 
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 fun fwithline(
     fh: !FileHandle,
@@ -272,7 +269,7 @@ fun fwithline(
     f (                     (buffer))
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 fun fwithline(
     fh: !FileHandle,
@@ -289,7 +286,7 @@ fun fwithline(
     f ($UN.castvwtp0{string}(buffer))
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 implement main0(argc,argv) =
   let
@@ -303,7 +300,7 @@ implement main0(argc,argv) =
   )
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 implement main0(argc,argv) =
   let
@@ -317,7 +314,7 @@ implement main0(argc,argv) =
   )
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 fun fclose(f:FileHandle):void =
   let 
@@ -326,7 +323,7 @@ fun fclose(f:FileHandle):void =
     $extfcall(void,"fclose",fromFH(f))
   end
 #+END_SRC
-* 
+* ATS
 #+BEGIN_SRC
 implement main0(argc,argv) =
   let
@@ -340,7 +337,7 @@ implement main0(argc,argv) =
   )
   end
 #+END_SRC
-* 
+* ATS
 
 #+BEGIN_SRC
 fun fwithline(       

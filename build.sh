@@ -51,5 +51,11 @@ if [ ! -f "$TEMPTORY/bin/tempacc" ]; then
       (cp utils/tempacc/BUILD/tempacc bin/.)))
 fi
 
+"$TEMPTORY/bin/tempacc" -D_GNU_SOURCE -O2 -flto -s -DATS_MEMALLOC_LIBC -o file file.dats
+strip file
+
+"$TEMPTORY/bin/tempacc" -D_GNU_SOURCE -O2 -flto -s -DATS_MEMALLOC_LIBC -o arr arr.dats
+strip arr
+
 "$TEMPTORY/bin/tempacc" -D_GNU_SOURCE -O2 -flto -s -DATS_MEMALLOC_LIBC -o test test.dats
 strip test
