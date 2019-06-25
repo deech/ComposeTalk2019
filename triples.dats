@@ -1,19 +1,25 @@
 #include "share/atspre_staload.hats"
 
 fun triples () : stream_vt(@(int,int,int)) =
-  aux1(1) where {
-    vtypedef res_vt = stream_vt(@(int,int,int))
-    fun aux1(z: int): res_vt = aux2(1, z)
-    and aux2(x: int, z: int): res_vt =
+  f1(1) where {
+    vtypedef res = stream_vt(@(int,int,int))
+    fun f1(z: int): res = f2(1, z)
+    and f2(x: int, z: int): res =
           if x <= z then 
-          aux3(x, x, z) 
-          else aux1(z+1)
-    and aux3(x: int, y: int, z: int): res_vt =
+          f3(x, x, z) 
+          else f1(z+1)
+    and f3(x: int, y: int, z: int): res =
           $ldelay(
             if y <= z then
-              (stream_vt_cons((x, y, z), aux3(x, y+1, z)))
-            else !(aux2(x+1, z))
+              (stream_vt_cons((x, y, z), f3(x, y+1, z)))
+            else !(f2(x+1, z))
           )
+  }
+
+fun number_stream(start:int): stream_vt(int) = 
+  loop(start) where {
+    fun loop(curr:int):stream_vt(int) =
+      $ldelay(stream_vt_cons(curr,loop(curr+1)))
   }
 
 implement

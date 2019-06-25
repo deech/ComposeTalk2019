@@ -521,11 +521,39 @@ val a = arr_cons(string0_copy_vt("a"),
             ...
 prval (a1,a2) = array_split(a,1)
  |                  |_______ type level proof!
- |____________ proof value
+ |____________ proof value ["a"], ["b","c","d"]
 
-["a"], ["b","c","d"]
+print_array(a1) <-- at runtime!
+print_array(a2)
+...
 #+END_SRC
 - Proofs erased at runtime, zero cost!
+* ATS 
+#+BEGIN_SRC
+prfn arr_split
+  {a:vtflt}
+  {l:addr}
+  {n:int}{i:nat | i <= n}
+  (pfarr: arr(a,l,n), i:size(n)): 
+    @(arr(a,l,i), arr(a,l+i*sizeof(a),n-i)) =
+  split (pfarr) where {
+    prfun split
+       ...
+  }
+#+END_SRC
+* ATS 
+#+BEGIN_SRC
+prfn arr_split
+           
+          
+                         
+                                  
+                                            =
+  split (pfarr) where {
+    prfun split
+       ...
+  }
+#+END_SRC
 * ATS 
 #+BEGIN_SRC
 prfn arr_split
@@ -614,6 +642,24 @@ prfun split
 prfun split
   ...
   sif i > 0 then 
+        
+                                      
+                                                        
+      
+                                       
+       
+  else 
+       
+                                        
+      
+                             
+       
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+prfun split
+  ...
+  sif i > 0 then 
     let 
       prval (pfx,pfxs) = uncons(pfarr)
                              
@@ -671,10 +717,28 @@ prfun split
     let 
       prval (pfx,pfxs) = uncons(pfarr)
       prval (pfleft,pfright) = split{..}{n-1,i-1}(pfxs)
-    in                                |_____
-      (arr_cons (pfx, pfleft), pfright)     |
-    end                                     |
-  else          l+sizeof(a)_________________|
+    in                                |
+                l+sizeof(a)___________| 
+    end                                     
+  else          
+
+
+
+
+    end
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+prfun split
+  ...
+  sif i > 0 then 
+    let 
+      prval (pfx,pfxs) = uncons(pfarr)
+      prval (pfleft,pfright) = split{..}{n-1,i-1}(pfxs)
+    in                                
+      (arr_cons (pfx, pfleft), pfright)
+    end                                
+  else          
 
 
 
@@ -704,10 +768,10 @@ prfun split
 prfun split
   ...
   sif i > 0 then 
-        
-              ___________________________________                        
-              |                                  |                
-  dataprop EQINT(int,int) = {x:int} EQINT(x,x)   |
+
+
+
+
   extern prfun eqint_make{x,y:int | x == y}(): EQINT(x, y)
                    |_______ 
   else                     |
@@ -717,3 +781,141 @@ prfun split
      (arr_nil{a}{l}(), pfarr)
     end
 #+END_SRC
+* ATS
+#+BEGIN_SRC
+prfun split
+  ...
+  sif i > 0 then 
+              ___________________________________                        
+              |                                  |                
+  dataprop EQINT(int,int) = {x:int} EQINT(x,x)   |
+                                                 |
+  extern prfun eqint_make{x,y:int | x == y}(): EQINT(x, y)
+                   |_______ 
+  else                     |
+    let                    |
+      prval EQINT () = eqint_make{i,0}()
+    in
+     (arr_nil{a}{l}(), pfarr)
+    end
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+val a = arr_cons(string0_copy_vt("a"),
+         arr_cons(string0_copy_vt("b"),
+            ...
+prval (a1,a2) = array_split(a,1)
+print_array(a1)
+print_array(a2)
+...
+#+END_SRC
+* ATS
+- Fundamental low level concept, arrays
+  - type safe!
+  - No loss of performance
+  - ... or intuition!
+  - No (term-level) magic!
+- Interleaving proofs == flexible design
+  - Like Haskell's explicity constraint passing
+  - But way nicer!
+* ATS
+- Streams are relatively new
+- Compile time magic is the same 
+  - No harder than arrays
+- Magic at runtime!
+  - Memory usage seems to hold steady
+* ATS
+#+BEGIN_SRC
+datavtype
+stream_vt_con (a:vtflt) =
+  | stream_vt_nil of ()
+  | stream_vt_cons of (a, stream_vt(a))
+where
+stream_vt
+  (a:vtlflt) = lazy_vt(stream_vt_con(a))
+                  |___ just a pointer
+#+END_SRC
+* ATS
+- '$ldelay', new keyword
+#+BEGIN_SRC
+$ldelay ( 
+   some suspended computation,
+   optionally free linear resources
+)
+#+END_SRC
+- '!' force one thunk
+* ATS
+#+BEGIN_SRC
+fun number_stream(start:int): stream_vt(int) = 
+  loop(start) where {
+    fun loop(curr:int):stream_vt(int) =
+      $ldelay(stream_vt_cons(curr,loop(curr+1)))
+  }
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+fun number_stream(start:int):                = 
+  loop(start) where {
+    fun loop(curr:int)                =
+      $ldelay(stream_vt_cons(curr,loop(curr+1)))
+  }
+#+END_SRC
+* ATS
+- Generate Pythagorean triples
+  - a^2 + b^2 = c^2
+  - eg, (3,4,5)
+- Generate _all_ triples
+- Keep the Pythagorean triples
+- Standard brute force benchmark
+  - ATS same as C/C++
+* ATS 
+#+BEGIN_SRC
+fun triples () : stream_vt(@(int,int,int)) =
+  f1(1) where {
+    vtypedef res = stream_vt(@(int,int,int))
+    fun f1(z: int): res = f2(1, z)
+    and f2(x: int, z: int): res =
+          if x <= z then 
+          f3(x, x, z) 
+          else f1(z+1)
+    and f3(x: int, y: int, z: int): res =
+          $ldelay(
+            if y <= z then
+              (stream_vt_cons((x, y, z), f3(x, y+1, z)))
+            else !(f2(x+1, z))
+          )
+  }
+#+END_SRC
+* ATS 
+#+BEGIN_SRC
+fun triples () : stream_vt(@(int,int,int)) =
+  f1(1) where {
+    
+    fun f1              = f2(    )
+    and f2                      =
+          if        then 
+          f3(       ) 
+          else f1(   )
+    and f3(                      ): res =
+          $ldelay(
+            if        then
+              (stream_vt_cons((       ), f3(         )))
+            else !(f2(      ))
+          )
+  }
+#+END_SRC
+* ATS
+#+BEGIN_SRC
+  stream_vt_filter_fun
+    ( triples(),
+      lam(ts) => 
+         let 
+           val (x, y, z) = ts 
+         in 
+            x*x + y*y = z*z 
+         end
+    )
+#+END_SRC
+* ATS
+- Steady 688 Kb of resident memory!
+- Mostly probably the in filter 'lam'
